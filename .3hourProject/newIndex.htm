@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteBook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+
+        .search, .title, #description {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .notes-list {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .note-item {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>NoteBook</h1>
+
+        <label for="search">Search Notes:</label>
+        <input type="text" class="search" id="search" oninput="searchNotes()">
+
+        <label for="title">Note Title:</label>
+        <input type="text" id="title" class="title">
+
+        <label for="description">Note Description:</label>
+        <textarea name="description" id="description" rows="5"></textarea>
+
+        <button onclick="addNote()">Add Note</button>
+
+        <h2>Notes</h2>
+        <ul class="notes-list" id="notesList"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load existing notes from curdcurd.in API on page load
+            loadNotes();
+        });
+
+        function loadNotes() {
+            fetch('https://crudcrud.com/api/YOUR_API_KEY/notes') // Replace YOUR_API_KEY with your actual API key
+                .then(response => response.json())
+                .then(data => {
+                    const notesList = document.getElementById('notesList');
+                    notesList.innerHTML = '';
+
+                    data.forEach(note => {
+                        const noteItem = document.createElement('li');
+                        noteItem.className = 'note-item';
+                        noteItem.textContent = `${note.title}: ${note.description}`;
+                        notesList.appendChild(noteItem);
+                    });
+                })
+                .catch(error => console.error('Error loading notes:', error));
+        }
+
+        function addNote() {
+            const titleInput = document.getElementById('title');
+            const descriptionInput = document.getElementById('description');
+
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+
+            if (title && description) {
+                const note = { title, description };
+
+                // Add note to curdcurd.in API
+                fetch('https://crudcrud.com/api/YOUR_API_KEY/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(note),
+                })
+                .then(response => response.json())
+                .then(() => {
+                    // Reload notes after adding a new one
+                    loadNotes();
+
+                    // Clear input fields
+                    titleInput.value = '';
+                    descriptionInput.value = '';
+                })
+                .catch(error => console.error('Error adding note:', error));
+            }
+        }
+
+        function searchNotes() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const notes = document.querySelectorAll('.note-item');
+
+            notes.forEach(note => {
+                const text = note.textContent.toLowerCase();
+                const display = text.includes(searchTerm) ? 'block' : 'none';
+                note.style.display = display;
+            });
+        }
+    </script>
+</body>
+</html>
